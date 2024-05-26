@@ -1,9 +1,9 @@
 extends Node2D
 
 # Retrieve references to the game's tilemap, fog, and player.
-onready var tilemap : TileMap = get_node("TileMap")
-onready var fog : TileMap = get_node("Fog")
-onready var player = get_node("Hero")
+@onready var tilemap : TileMap = get_node("TileMap")
+@onready var fog : TileMap = get_node("Fog")
+@onready var player = get_node("Hero")
 var visible_tiles = {}
 var player_position
 const MAX_VISION_DISTANCE = 12 # Maximum distance for player's FOV.
@@ -11,30 +11,30 @@ const MAX_VISION_DISTANCE = 12 # Maximum distance for player's FOV.
 func _ready():
 	# Update FOV upon game initialization.
 	update_fov()
-	OS.set_window_title("Shadowcasting FOV algorithm")
+	get_window().set_title("Shadowcasting FOV algorithm")
 
 func _on_Hero_player_moved():
 	# Update FOV when the player moves.
 	update_fov()
 
 # Handle mouse click events to add/remove walls.
-func _unhandled_input(event):
-	if Input.is_mouse_button_pressed(BUTTON_LEFT):
-		var tile_position = tilemap.world_to_map(event.position)
-		tilemap.set_cellv(tile_position, 1)
+func _input(event):
+	if event.is_action_pressed("left_mouse_button"):
+		var tile_position = tilemap.local_to_map(event.position)
+		tilemap.set_cell(0, tile_position, 1, Vector2i(0, 0), 0)
 
-	if Input.is_mouse_button_pressed(BUTTON_RIGHT):
-		var tile_position = tilemap.world_to_map(event.position)
-		tilemap.set_cellv(tile_position, 0)
+	if event.is_action_pressed("right_mouse_button"):
+		var tile_position = tilemap.local_to_map(event.position)
+		tilemap.set_cell(0, tile_position, 0, Vector2i(0, 0), 0)
 
-	if Input.is_key_pressed(KEY_ESCAPE):
-		get_tree().change_scene("res://scenes/Main.tscn")
+	if event.is_action_pressed("ui_cancel"):
+		get_tree().change_scene_to_file("res://scenes/Main.tscn")
 
 # Calculate and apply FOV from the player's position.
 func update_fov():
-	player_position = tilemap.world_to_map(player.global_position)
+	player_position = tilemap.local_to_map(player.global_position)
 	for n in visible_tiles.keys():
-		fog.set_cellv(n, 1) # Reset visible tiles to soft-fog.
+		fog.set_cell(0, n, 1, Vector2i(0, 0), 0)
 	shadow_casting(player_position) # Calculate visible tiles.
 
 # Primary shadowcasting function, iterates through quadrants.
@@ -51,9 +51,11 @@ func reveal(tile : Vector2, quadrant : Quadrant):
 	mark_visible(result)
 
 # Mark a tile as visible if it's within the defined vision distance.
-func mark_visible(tile : Vector2):
-	if distance(player_position, tile) > MAX_VISION_DISTANCE: return
-	fog.set_cellv(tile, -1) # Clear fog for this tile.
+func mark_visible(tile : Vector2i):
+	if distance(player_position, tile) > MAX_VISION_DISTANCE: 
+		return
+	
+	fog.set_cell(0, tile, -1, Vector2i(-1, -1), -1)
 	visible_tiles[tile] = true
 
 # Checks if a tile is considered a wall in the given quadrant.
@@ -69,8 +71,8 @@ func is_floor(tile, quadrant : Quadrant) -> bool:
 	return not is_blocking(result)
 
 # Determines if a tile is blocking the vision (e.g. a wall).
-func is_blocking(tile : Vector2) -> bool:
-	return tilemap.get_cellv(tile) == 1
+func is_blocking(tile : Vector2i) -> bool:
+	return tilemap.get_cell_source_id(0, tile) == 1
 
 # Calculates the slope between the origin and a given tile, used to determine vision angles.
 func slope(tile : Vector2) -> float:
@@ -107,10 +109,10 @@ class Quadrant:
 	var ox
 	var oy
 
-	func _init(cardinal, origin):
-		self.cardinal = cardinal
-		self.ox = origin.x
-		self.oy = origin.y
+	func _init(initial_cardinal, initial_origin):
+		self.cardinal = initial_cardinal
+		self.ox = initial_origin.x
+		self.oy = initial_origin.y
 
 	# Transforms a tile's position based on its quadrant.
 	func transform(tile : Vector2):
@@ -132,10 +134,10 @@ class Row:
 	var start_slope
 	var end_slope
 
-	func _init(depth : int, start_slope, end_slope):
-		self.depth = depth
-		self.start_slope = start_slope
-		self.end_slope = end_slope
+	func _init(initial_depth : int, initial_start_slope, initial_end_slope):
+		self.depth = initial_depth
+		self.start_slope = initial_start_slope
+		self.end_slope = initial_end_slope
 
 	# Returns the tiles within the row that need to be scanned.
 	func tiles() -> Array:

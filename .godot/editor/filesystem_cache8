@@ -1,0 +1,16 @@
+ea4bc82a6ad023ab7ee23ee620429895
+::res://::1716732512
+default_env.tres::Environment::2348375003369489208::1716732459::0::1::::<><>::
+Hero.gd::GDScript::-1::1716730303::0::1::::<>Node2D<>::
+icon.png::CompressedTexture2D::4062202269072892719::1716719740::1716724734::1::::<><>::
+README.md::TextFile::-1::1716732257::0::1::::<><>::
+::res://img/::1716724734
+Rogue Yun_16x16_sm.png::CompressedTexture2D::5864135820908780109::1716719740::1716724734::1::::<><>::
+::res://scenes/::1716732459
+Hero.tscn::PackedScene::4946824988472589560::1716732459::0::1::::<><>::res://Hero.gd<>uid://cpsvpwacnkgvl::::res://img/Rogue Yun_16x16_sm.png
+Main.gd::GDScript::-1::1716732257::0::1::::<>Control<>::
+Main.tscn::PackedScene::2954302126422344514::1716732459::0::1::::<><>::res://scenes/Main.gd
+Raycasting.gd::GDScript::-1::1716729959::0::1::::<>Node2D<>::
+Raycasting.tscn::PackedScene::2803364797352809518::1716732459::0::1::::<><>::res://scenes/Raycasting.gd<>uid://cpsvpwacnkgvl::::res://img/Rogue Yun_16x16_sm.png<>uid://ccqjqqpmm18bc::::res://scenes/Hero.tscn
+Shadowcasting.gd::GDScript::-1::1716730466::0::1::::<>Node2D<>::
+Shadowcasting.tscn::PackedScene::738382076755977107::1716732459::0::1::::<><>::res://scenes/Shadowcasting.gd<>uid://cpsvpwacnkgvl::::res://img/Rogue Yun_16x16_sm.png<>uid://ccqjqqpmm18bc::::res://scenes/Hero.tscn

@@ -1,0 +1,6 @@
+res://default_env.tres
+res://scenes/Main.tscn
+res://scenes/Hero.tscn
+res://scenes/Raycasting.tscn
+res://scenes/Shadowcasting.tscn
+res://scenes/Main.gd

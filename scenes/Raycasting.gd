@@ -1,9 +1,9 @@
 extends Node2D
 
 # Retrieve references to the tile maps for the game's terrain/fog and player.
-onready var tile_map : TileMap = get_node("TileMap")
-onready var fog : TileMap = get_node("Fog")
-onready var player = get_node("Hero")
+@onready var tilemap : TileMap = get_node("TileMap")
+@onready var fog : TileMap = get_node("Fog")
+@onready var player = get_node("Hero")
 
 # Define the player's view distance.
 var view_distance = 12
@@ -14,32 +14,32 @@ var discovered_tiles = {}
 func _ready():
 	# Update the field of view when the game starts.
 	update_fov()
-	OS.set_window_title("Raycasting FOV algorithm")
+	get_window().set_title("Raycasting FOV algorithm")
 
 func _on_Hero_player_moved():
 	# Update the field of view each time the player moves.
 	update_fov()
 
 # Handle mouse click events to add/remove walls.
-func _unhandled_input(event):
-	if Input.is_mouse_button_pressed(BUTTON_LEFT):
-		var tile_position = $TileMap.world_to_map(event.position)
-		$TileMap.set_cellv(tile_position, 1)
+func _input(event):
+	if event.is_action_pressed("left_mouse_button"):
+		var tile_position = tilemap.local_to_map(get_viewport().get_mouse_position())
+		tilemap.set_cell(0, tile_position, 1, Vector2i(0, 0), 0)
 
-	if Input.is_mouse_button_pressed(BUTTON_RIGHT):
-		var tile_position = $TileMap.world_to_map(event.position)
-		$TileMap.set_cellv(tile_position, 0)
+	if event.is_action_pressed("right_mouse_button"):
+		var tile_position = tilemap.local_to_map(get_viewport().get_mouse_position())
+		tilemap.set_cell(0, tile_position, 0, Vector2i(0, 0), 0)
 
-	if Input.is_key_pressed(KEY_ESCAPE):
-		get_tree().change_scene("res://scenes/Main.tscn")
+	if event.is_action_pressed("ui_cancel"):
+		get_tree().change_scene_to_file("res://scenes/Main.tscn")
 
 func update_fov():
 	# Get the player's position in tile map coordinates.
-	var player_position = tile_map.world_to_map(player.global_position)
+	var player_position = tilemap.local_to_map(player.global_position)
 
 	# Set previously discovered tiles back to soft-fog.
 	for tile in discovered_tiles.keys():
-		fog.set_cellv(tile, 1)
+		fog.set_cell(0, tile, 1, Vector2i(0, 0), 0)
 
 	# Perform raycasting from the player's position.
 	raycast_fov(player_position)
@@ -54,9 +54,9 @@ func raycast_fov(origin : Vector2):
 			var end_tile = origin + Vector2(x, y)
 			# If the tile is within view range, perform line tracing towards it.
 			if end_tile.distance_to(origin) <= view_distance:
-				bresenham_line(origin, end_tile)
+				bresenham_line(origin as Vector2i, end_tile as Vector2i)
 
-func bresenham_line(start, end):
+func bresenham_line(start:Vector2i, end:Vector2i):
 	# Implementation of Bresenham's line drawing algorithm on a tile map.
 	var x0 = start.x
 	var y0 = start.y
@@ -72,14 +72,15 @@ func bresenham_line(start, end):
 	while true:
 		# Set the current tile as visible and mark it as discovered.
 		var tile = Vector2(x0, y0)
-		fog.set_cellv(tile, -1)
+		fog.set_cell(0, tile, 0, Vector2i(-1, -1), -1)
+		fog.set_cell(0, tile, 1, Vector2i(-1, -1), -1)
 		discovered_tiles[tile] = true
 
 		# If an obstacle is encountered in the line of sight, terminate line tracing.
-		if tile_map.get_cellv(tile) == 1: return
+		if tilemap.get_cell_source_id(0, tile) == 1: return
 		
 		# If the endpoint is reached, end the loop.
-		if x0 == x1 and y0 == y1: break
+		if x0 == x1 and y0 == y1: return
 		
 		# Update the current position based on the accumulated error.
 		var e2 = 2 * err
